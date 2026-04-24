@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zion's Lifespan</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1e1e1e;
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.14);
+      --text: #f0ede6;
+      --text2: #888;
+      --text3: #555;
+      --accent: #c9a96e;
+      --accent-bg: rgba(201,169,110,0.1);
+      --green: #5cb87a;
+      --red: #e25c5c;
+      --blue: #5c9be2;
+      --blue-bg: rgba(92,155,226,0.12);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'DM Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1rem 4rem;
+    }
+
+    .wrapper { width: 100%; max-width: 560px; }
+
+    .header { text-align: center; margin-bottom: 2.5rem; }
+    .header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 8vw, 3rem);
+      font-weight: 400;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+    .header p { font-size: 11px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    .timer-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-bottom: 8px; }
+    .timer-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-bottom: 2rem; }
+    .cell { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.1rem 0.5rem; text-align: center; }
+    .cell-num { font-size: clamp(22px, 5vw, 32px); font-weight: 500; color: var(--text); line-height: 1; letter-spacing: -0.02em; }
+    .cell-lbl { font-size: 10px; color: var(--text3); margin-top: 6px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .totals { border-top: 0.5px solid var(--border); padding-top: 1.25rem; margin-bottom: 2.5rem; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); text-align: center; gap: 8px; }
+    .total-num { font-size: 14px; font-weight: 500; color: var(--text); }
+    .total-lbl { font-size: 10px; color: var(--text3); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .section-title { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); margin-bottom: 1rem; }
+
+    .bet-form { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .field label { display: block; font-size: 10px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 5px; }
+    input[type="text"], input[type="date"], input[type="time"] {
+      width: 100%; background: var(--surface2); border: 0.5px solid var(--border2);
+      border-radius: var(--radius-sm); color: var(--text); font-family: 'DM Mono', monospace;
+      font-size: 13px; padding: 8px 10px; outline: none; transition: border-color 0.15s;
+      -webkit-appearance: none; color-scheme: dark;
+    }
+    input:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--text3); }
+
+    .error-msg { font-size: 11px; color: var(--red); min-height: 14px; margin-bottom: 10px; }
+
+    button.primary {
+      width: 100%; background: var(--accent-bg); border: 0.5px solid var(--accent);
+      border-radius: var(--radius-sm); color: var(--accent); font-family: 'DM Mono', monospace;
+      font-size: 13px; font-weight: 500; padding: 10px; cursor: pointer; letter-spacing: 0.04em; transition: background 0.15s;
+    }
+    button.primary:hover { background: rgba(201,169,110,0.18); }
+
+    button.small {
+      background: transparent; border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
+      color: var(--text3); font-family: 'DM Mono', monospace; font-size: 11px; padding: 4px 10px;
+      cursor: pointer; transition: border-color 0.15s, color 0.15s;
+    }
+    button.small:hover { border-color: var(--red); color: var(--red); }
+
+    .bets-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+
+    .bet-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1rem 1.1rem; margin-bottom: 10px; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: none; } }
+
+    .bet-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .avatar { width:36px; height:36px; border-radius:50%; background:var(--blue-bg); border:0.5px solid var(--blue); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:500; color:var(--blue); flex-shrink:0; }
+    .bet-name { font-size: 14px; font-weight: 500; color: var(--text); }
+    .bet-amount { font-size: 12px; color: var(--green); }
+    .bet-placed { font-size: 11px; color: var(--text3); }
+    .bet-prediction { font-size: 12px; color: var(--text2); font-style: italic; margin-bottom: 10px; padding-left: 46px; }
+    .bet-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .meta-cell { background: var(--surface2); border-radius: var(--radius-sm); padding: 8px 10px; }
+    .meta-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+    .meta-val { font-size: 13px; font-weight: 500; color: var(--text); }
+    .meta-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+    .countdown { font-size: 12px; color: var(--text3); padding-left: 2px; }
+    .countdown.reached { color: var(--green); }
+
+    #bets-section { display: none; }
+
+    @media (max-width: 400px) {
+      .timer-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <h1>Zion's Lifespan</h1>
+    <p>since November 15, 2004 · 12:01 AM</p>
+  </div>
+
+  <div class="timer-grid">
+    <div class="cell"><div class="cell-num" id="years">--</div><div class="cell-lbl">years</div></div>
+    <div class="cell"><div class="cell-num" id="months">--</div><div class="cell-lbl">months</div></div>
+    <div class="cell"><div class="cell-num" id="days">--</div><div class="cell-lbl">days</div></div>
+    <div class="cell"><div class="cell-num" id="hours">--</div><div class="cell-lbl">hours</div></div>
+  </div>
+  <div class="timer-grid-2">
+    <div class="cell"><div class="cell-num" id="minutes">--</div><div class="cell-lbl">minutes</div></div>
+    <div class="cell"><div class="cell-num" id="seconds">--</div><div class="cell-lbl">seconds</div></div>
+  </div>
+
+  <div class="totals">
+    <div><div class="total-num" id="total-days">--</div><div class="total-lbl">total days</div></div>
+    <div><div class="total-num" id="total-hours">--</div><div class="total-lbl">total hours</div></div>
+    <div><div class="total-num" id="total-seconds">--</div><div class="total-lbl">total seconds</div></div>
+  </div>
+
+  <p class="section-title">Place a bet</p>
+  <div class="bet-form">
+    <div class="form-row">
+      <div class="field"><label>Your name</label><input type="text" id="bet-name" placeholder="e.g. Kwame" /></div>
+      <div class="field"><label>Bet amount</label><input type="text" id="bet-amount" placeholder="e.g. ₦500" /></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Guess date</label><input type="date" id="bet-date" /></div>
+      <div class="field"><label>Guess time</label><input type="time" id="bet-time" /></div>
+    </div>
+    <div class="form-row single">
+      <div class="field"><label>Your prediction</label><input type="text" id="bet-prediction" placeholder="e.g. Zion takes his first solo trip abroad" /></div>
+    </div>
+    <p class="error-msg" id="bet-error"></p>
+    <button class="primary" onclick="placeBet()">Place bet</button>
+  </div>
+
+  <div id="bets-section">
+    <div class="bets-header">
+      <p class="section-title" style="margin:0;">Bets placed <span id="bet-count" style="color:var(--text3);"></span></p>
+      <button class="small" onclick="clearBets()">Clear all</button>
+    </div>
+    <div id="bets-list"></div>
+  </div>
+
+</div>
+<script>
+  const start = new Date(2004, 10, 15, 0, 1, 0);
+  let bets = [];
+
+  function ageAt(date) {
+    let y = date.getFullYear() - start.getFullYear();
+    let m = date.getMonth() - start.getMonth();
+    let d = date.getDate() - start.getDate();
+    if (d < 0) m--;
+    if (m < 0) { y--; m += 12; }
+    return { y, m };
+  }
+
+  function update() {
+    const now = new Date();
+    const diff = now - start;
+    let y = now.getFullYear() - start.getFullYear();
+    let m = now.getMonth() - start.getMonth();
+    let d = now.getDate() - start.getDate();
+    if (d < 0) { m--; d += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
+    if (m < 0) { y--; m += 12; }
+    document.getElementById('years').textContent = y;
+    document.getElementById('months').textContent = m;
+    document.getElementById('days').textContent = d;
+    document.getElementById('hours').textContent = now.getHours();
+    document.getElementById('minutes').textContent = String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('seconds').textContent = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('total-days').textContent = Math.floor(diff/86400000).toLocaleString();
+    document.getElementById('total-hours').textContent = Math.floor(diff/3600000).toLocaleString();
+    document.getElementById('total-seconds').textContent = Math.floor(diff/1000).toLocaleString();
+    updateCountdowns();
+  }
+
+  function updateCountdowns() {
+    const now = new Date();
+    bets.forEach((b, i) => {
+      const el = document.getElementById('cd-' + i);
+      if (!el) return;
+      const diff = b.targetDate - now;
+      if (diff <= 0) { el.textContent = '✓ Time reached!'; el.className = 'countdown reached'; }
+      else {
+        const td = Math.floor(diff/86400000), th = Math.floor((diff%86400000)/3600000);
+        const tm = Math.floor((diff%3600000)/60000), ts = Math.floor((diff%60000)/1000);
+        el.textContent = td + 'd ' + th + 'h ' + tm + 'm ' + ts + 's away';
+        el.className = 'countdown';
+      }
+    });
+  }
+
+  function placeBet() {
+    const name = document.getElementById('bet-name').value.trim();
+    const amount = document.getElementById('bet-amount').value.trim();
+    const date = document.getElementById('bet-date').value;
+    const time = document.getElementById('bet-time').value || '00:00';
+    const prediction = document.getElementById('bet-prediction').value.trim();
+    const err = document.getElementById('bet-error');
+    if (!name) { err.textContent = 'Please enter your name.'; return; }
+    if (!date) { err.textContent = 'Please pick a date.'; return; }
+    const target = new Date(date + 'T' + time);
+    if (target <= new Date()) { err.textContent = 'Please choose a future date and time.'; return; }
+    err.textContent = '';
+    const a = ageAt(target);
+    bets.unshift({ name, amount, targetDate: target, prediction, ageY: a.y, ageM: a.m, placedAt: new Date() });
+    document.getElementById('bet-name').value = '';
+    document.getElementById('bet-amount').value = '';
+    document.getElementById('bet-date').value = '';
+    document.getElementById('bet-time').value = '';
+    document.getElementById('bet-prediction').value = '';
+    renderBets();
+  }
+
+  function removeBet(i) { bets.splice(i, 1); renderBets(); }
+  function clearBets() { bets = []; renderBets(); }
+
+  function renderBets() {
+    const section = document.getElementById('bets-section');
+    const list = document.getElementById('bets-list');
+    if (bets.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    document.getElementById('bet-count').textContent = '(' + bets.length + ')';
+    list.innerHTML = bets.map((b, i) => {
+      const initials = b.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+      const dateStr = b.targetDate.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+      const timeStr = b.targetDate.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+      return `<div class="bet-card">
+        <div class="bet-top">
+          <div class="avatar">${initials}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="bet-name">${b.name}${b.amount ? ' <span class="bet-amount">· ' + b.amount + '</span>' : ''}</div>
+            <div class="bet-placed">Placed at ${b.placedAt.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})}</div>
+          </div>
+          <button class="small" onclick="removeBet(${i})">✕</button>
+        </div>
+        ${b.prediction ? `<div class="bet-prediction">"${b.prediction}"</div>` : ''}
+        <div class="bet-meta">
+          <div class="meta-cell"><div class="meta-lbl">Target</div><div class="meta-val">${dateStr}</div><div class="meta-sub">${timeStr}</div></div>
+          <div class="meta-cell"><div class="meta-lbl">Zion's age then</div><div class="meta-val">${b.ageY} yrs, ${b.ageM} mo</div></div>
+        </div>
+        <div class="countdown" id="cd-${i}"></div>
+      </div>`;
+    }).join('');
+    updateCountdowns();
+  }
+
+  update();
+  setInterval(update, 1000);
+</script>
+</body>
+</html>
